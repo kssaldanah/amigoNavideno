@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amigo Navideño</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            margin-top: 50px;
+            background: url('https://www.toptal.com/designers/subtlepatterns/patterns/starry-night.png');
+            background-color: #d4f1f4;
+            color: #2c3e50;
+        }
+        h1 {
+            color: #e74c3c;
+            font-size: 3em;
+            text-shadow: 2px 2px 4px #000000;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.3s;
+        }
+        button:hover {
+            background-color: #218838;
+            transform: scale(1.1);
+        }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        label {
+            display: block;
+            margin-top: 20px;
+            font-size: 24px;
+            color: #34495e;
+            text-shadow: 1px 1px 2px #ffffff;
+        }
+        .container {
+            padding: 20px;
+            border: 2px solid #e74c3c;
+            border-radius: 15px;
+            background-color: #ffffffdd;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Asignador de Amigo Navideño</h1>
+        <label for="userName">¿Quién eres?</label>
+        <input type="text" id="userName" class="form-control mb-3" placeholder="Escribe tu nombre">
+        <button id="assignButton" class="btn btn-success">Mi amigo navideño</button>
+        <label id="assignedFriend"></label>
+        <button id="resetButton" class="btn btn-danger mt-3 d-none">Reiniciar amigos navideños</button>
+    </div>
+
+    <script>
+        // Array original con 10 nombres
+        const initialNames = ["Ana", "Carlos", "Luis", "Marta", "José", "Elena", "Pedro", "Laura", "Diana", "Jorge"];
+
+        // Recuperar los nombres restantes del Local Storage o usar el array inicial
+        let remainingNames = JSON.parse(localStorage.getItem("remainingNames")) || [...initialNames];
+
+        // Referencias a los elementos HTML
+        const assignButton = document.getElementById("assignButton");
+        const resetButton = document.getElementById("resetButton");
+        const assignedFriendLabel = document.getElementById("assignedFriend");
+        const userNameInput = document.getElementById("userName");
+
+        assignButton.addEventListener("click", () => {
+            const userName = userNameInput.value.trim();
+
+            // Validar si el nombre fue ingresado
+            if (!userName) {
+                assignedFriendLabel.textContent = "Por favor, escribe tu nombre.";
+                return;
+            }
+
+            // Verificar si quedan nombres en el array
+            if (remainingNames.length === 0) {
+                assignedFriendLabel.textContent = "Todos los amigos navideños han sido asignados.";
+                return;
+            }
+
+            // Seleccionar un nombre aleatorio
+            const randomIndex = Math.floor(Math.random() * remainingNames.length);
+            const assignedName = remainingNames[randomIndex];
+
+            // Mostrar el nombre asignado con el nombre del usuario
+            assignedFriendLabel.textContent = `${userName}, tu amigo navideño es: ${assignedName}`;
+
+            // Eliminar el nombre del array y guardar en Local Storage
+            remainingNames.splice(randomIndex, 1);
+            localStorage.setItem("remainingNames", JSON.stringify(remainingNames));
+
+            // Desactivar el botón después de asignar un amigo navideño
+            assignButton.disabled = true;
+
+            // Mostrar botón de reinicio si el nombre es Santiago
+            if (userName.toLowerCase() === "santiago") {
+                resetButton.classList.remove("d-none");
+            }
+        });
+
+        resetButton.addEventListener("click", () => {
+            remainingNames = [...initialNames];
+            localStorage.setItem("remainingNames", JSON.stringify(remainingNames));
+            assignedFriendLabel.textContent = "La lista de amigos navideños se ha restablecido.";
+            resetButton.classList.add("d-none");
+            assignButton.disabled = false; // Reactivar el botón al reiniciar
+        });
+
+        // Mensaje si no hay más nombres disponibles al cargar la página
+        if (remainingNames.length === 0) {
+            assignedFriendLabel.textContent = "Todos los amigos navideños han sido asignados.";
+        }
+    </script>
+</body>
+</html>
