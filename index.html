@@ -61,69 +61,78 @@
         <input type="text" id="userName" class="form-control mb-3" placeholder="Escribe tu nombre">
         <button id="assignButton" class="btn btn-success">Mi amigo navideño</button>
         <label id="assignedFriend"></label>
-        <button id="resetButton" class="btn btn-danger mt-3 d-none">Reiniciar amigos navideños</button>
+        <button id="resetButton" class="btn btn-danger mt-3">Exportar Lista</button>
+        <input type="file" id="uploadInput" class="form-control mt-3">
+        <button id="exitButton" class="btn btn-secondary mt-3">Salir</button>
     </div>
 
     <script>
-        // Array original con 10 nombres
         const initialNames = ["Ana", "Carlos", "Luis", "Marta", "José", "Elena", "Pedro", "Laura", "Diana", "Jorge"];
+        let remainingNames = [...initialNames];
 
-        // Recuperar los nombres restantes del Local Storage o usar el array inicial
-        let remainingNames = JSON.parse(localStorage.getItem("remainingNames")) || [...initialNames];
-
-        // Referencias a los elementos HTML
-        const assignButton = document.getElementById("assignButton");
-        const resetButton = document.getElementById("resetButton");
-        const assignedFriendLabel = document.getElementById("assignedFriend");
-        const userNameInput = document.getElementById("userName");
-
-        assignButton.addEventListener("click", () => {
-            const userName = userNameInput.value.trim();
-
-            // Validar si el nombre fue ingresado
-            if (!userName) {
-                assignedFriendLabel.textContent = "Por favor, escribe tu nombre.";
-                return;
-            }
-
-            // Verificar si quedan nombres en el array
-            if (remainingNames.length === 0) {
-                assignedFriendLabel.textContent = "Todos los amigos navideños han sido asignados.";
-                return;
-            }
-
-            // Seleccionar un nombre aleatorio
-            const randomIndex = Math.floor(Math.random() * remainingNames.length);
-            const assignedName = remainingNames[randomIndex];
-
-            // Mostrar el nombre asignado con el nombre del usuario
-            assignedFriendLabel.textContent = `${userName}, tu amigo navideño es: ${assignedName}`;
-
-            // Eliminar el nombre del array y guardar en Local Storage
-            remainingNames.splice(randomIndex, 1);
-            localStorage.setItem("remainingNames", JSON.stringify(remainingNames));
-
-            // Desactivar el botón después de asignar un amigo navideño
-            assignButton.disabled = true;
-
-            // Mostrar botón de reinicio si el nombre es Santiago
-            if (userName.toLowerCase() === "santiago") {
-                resetButton.classList.remove("d-none");
-            }
-        });
-
-        resetButton.addEventListener("click", () => {
-            remainingNames = [...initialNames];
-            localStorage.setItem("remainingNames", JSON.stringify(remainingNames));
-            assignedFriendLabel.textContent = "La lista de amigos navideños se ha restablecido.";
-            resetButton.classList.add("d-none");
-            assignButton.disabled = false; // Reactivar el botón al reiniciar
-        });
-
-        // Mensaje si no hay más nombres disponibles al cargar la página
-        if (remainingNames.length === 0) {
-            assignedFriendLabel.textContent = "Todos los amigos navideños han sido asignados.";
+        // Descargar el archivo JSON actualizado
+        function downloadUpdatedFile(names) {
+            const updatedData = { remainingNames: names };
+            const blob = new Blob([JSON.stringify(updatedData)], { type: "application/json" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "remainingNames.json";
+            link.click();
         }
+
+        // Cargar un archivo JSON con la lista actualizada
+        function uploadUpdatedFile(event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const data = JSON.parse(e.target.result);
+                remainingNames = data.remainingNames;
+                alert("Lista actualizada cargada correctamente.");
+            };
+            reader.readAsText(file);
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const assignButton = document.getElementById("assignButton");
+            const resetButton = document.getElementById("resetButton");
+            const assignedFriendLabel = document.getElementById("assignedFriend");
+            const userNameInput = document.getElementById("userName");
+            const uploadInput = document.getElementById("uploadInput");
+            const exitButton = document.getElementById("exitButton");
+
+            assignButton.addEventListener("click", () => {
+                const userName = userNameInput.value.trim();
+                if (!userName) {
+                    assignedFriendLabel.textContent = "Por favor, escribe tu nombre.";
+                    return;
+                }
+
+                if (remainingNames.length === 0) {
+                    assignedFriendLabel.textContent = "Todos los amigos navideños han sido asignados.";
+                    return;
+                }
+
+                const randomIndex = Math.floor(Math.random() * remainingNames.length);
+                const assignedName = remainingNames[randomIndex];
+
+                assignedFriendLabel.textContent = `${userName}, tu amigo navideño es: ${assignedName}`;
+
+                remainingNames.splice(randomIndex, 1);
+                downloadUpdatedFile(remainingNames);
+            });
+
+            resetButton.addEventListener("click", () => {
+                remainingNames = [...initialNames];
+                downloadUpdatedFile(remainingNames);
+                alert("Lista reiniciada y lista para exportar.");
+            });
+
+            uploadInput.addEventListener("change", uploadUpdatedFile);
+
+            exitButton.addEventListener("click", () => {
+                window.close();
+            });
+        });
     </script>
 </body>
 </html>
